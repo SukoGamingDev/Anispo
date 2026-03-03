@@ -16,6 +16,8 @@ public class Window {
 
     private BackGroundAnimation bg;
     private MenuMain menu;   // ⭐ keep reference
+    private MenuAccountSettings accSettingsMenu;
+
 
     public Window() {
 
@@ -52,6 +54,10 @@ public class Window {
 
         cardLayout.show(screenContainer, "MAIN");
 
+        accSettingsMenu = new MenuAccountSettings(this);
+        screenContainer.add(accSettingsMenu, "MenuAccountSettings");
+        accSettingsMenu.resizeTo(screenWidth, screenHeight);
+
         // ⭐ Force correct initial layout
         menu.resizeTo(screenWidth, screenHeight);
 
@@ -75,6 +81,7 @@ public class Window {
 
                 // ⭐ THIS was missing before
                 menu.resizeTo(newW, newH);
+                accSettingsMenu.resizeTo(newW, newH);
             }
         });
     }

@@ -1,18 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MenuMain extends JPanel {
 
-    private final Window window;
+    final Window window;
 
-    private ButtonMaker playButton;
-    private ButtonMaker tutorialButton;
-    private ButtonMaker settingsButton;
-    private ButtonMaker discordButton;
-    private ButtonMaker quitButton;
+    ButtonMaker playButton;
+    ButtonMaker tutorialButton;
+    ButtonMaker settingsButton;
+    ButtonMaker discordButton;
+    ButtonMaker quitButton;
 
-    private LabelMaker logo;
-    private LabelMaker bgPanel;
+    LabelMaker logo;
+    LabelMaker bgPanel;
 
     public MenuMain(Window window) {
         this.window = window;
@@ -66,7 +68,7 @@ public class MenuMain extends JPanel {
         bgPanel = new LabelMaker("/GUI/Trialbg2bb.png");
         logo = new LabelMaker("/GUI/Anispocool2.png");
 
-        playButton = new ButtonMaker(buttonW, buttonH, centerX, startY + 1*(buttonH+spacing),
+        playButton = new ButtonMaker(buttonW, buttonH, centerX, startY + (buttonH+spacing),
                 "/GUI/panel1aa.png","/GUI/panel1ab.png","Play");
 
         tutorialButton = new ButtonMaker(buttonW, buttonH, centerX, startY + 2*(buttonH+spacing),
@@ -84,13 +86,24 @@ public class MenuMain extends JPanel {
                 startY + 5*(buttonH+spacing),
                 "/GUI/panel1aa.png","/GUI/panel1ac.png","Quit");
 
+
+        settingsButton.getButton().addActionListener(e -> {
+            System.out.println("Clicked");
+            MenuMain.this.setVisible(false);
+            System.out.println("Visible? " + MenuMain.this.isVisible());
+            window.showScreen("MenuAccountSettings");
+        });
+
+
+
+
         // ===============================
         // PANEL WRAP (perfectly around stack)
         // ===============================
 
         int panelPadding = 25;
 
-        int firstButtonY = startY + 1*(buttonH + spacing);
+        int firstButtonY = startY + (buttonH + spacing);
         int lastButtonY  = startY + 5*(buttonH + spacing);
 
         int panelTop = firstButtonY - panelPadding / 2;
@@ -109,11 +122,13 @@ public class MenuMain extends JPanel {
 
         logo.setBounds(logoW, logoH, logoX, logoY);
 
-        playButton.setBounds(buttonW, buttonH, centerX, startY + 1*(buttonH+spacing));
+        playButton.setBounds(buttonW, buttonH, centerX, startY + (buttonH+spacing));
         tutorialButton.setBounds(buttonW, buttonH, centerX, startY + 2*(buttonH+spacing));
         settingsButton.setBounds(buttonW, buttonH, centerX, startY + 3*(buttonH+spacing));
         discordButton.setBounds(buttonW, buttonH, centerX, startY + 4*(buttonH+spacing));
         quitButton.setBounds(buttonW, buttonH, centerX, startY + 5*(buttonH+spacing));
+
+
 
         // ===============================
         // ADD COMPONENTS (correct Z-order)
@@ -132,6 +147,7 @@ public class MenuMain extends JPanel {
         revalidate();
         repaint();
     }
+
 
     public void resizeTo(int screenWidth, int screenHeight) {
         buildUI(screenWidth, screenHeight);
