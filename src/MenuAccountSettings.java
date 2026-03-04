@@ -5,8 +5,13 @@ public class MenuAccountSettings extends JPanel{
     final Window window;
 
     ButtonMaker playButton;
-    ButtonMaker accountButton;
     ButtonMaker backButton;
+
+    ButtonMaker accountButton;
+    ButtonMaker controlButton;
+    ButtonMaker graphicsButton;
+    ButtonMaker soundButton;
+
 
     LabelMaker logo;
     LabelMaker bgPanel;
@@ -77,10 +82,28 @@ public class MenuAccountSettings extends JPanel{
                 "/GUI/panel1ab.png",
                 "Account");
 
+        controlButton = new ButtonMaker(buttonW, buttonH, centerX,
+                startY + 3*(buttonH+spacing),
+                "/GUI/panel1aa.png",
+                "/GUI/panel1ab.png",
+                "Controls");
+
+        graphicsButton = new ButtonMaker(buttonW, buttonH, centerX,
+                startY + 3*(buttonH+spacing),
+                "/GUI/panel1aa.png",
+                "/GUI/panel1ab.png",
+                "Graphics");
+
+        soundButton = new ButtonMaker(buttonW, buttonH, centerX,
+                startY + 3*(buttonH+spacing),
+                "/GUI/panel1aa.png",
+                "/GUI/panel1ab.png",
+                "SFX");
+
 
         backButton = new ButtonMaker(buttonW, buttonH, centerX,
                 startY + 5*(buttonH+spacing),
-                "/GUI/panel1aa.png",
+                "/GUI/panel1ac.png",
                 "/GUI/panel1ac.png",
                 "Back");
 
@@ -115,27 +138,58 @@ public class MenuAccountSettings extends JPanel{
         // APPLY BOUNDS
         // ===============================
 
-        int backX = panelX + panelPadding;
+
+
+        int columns = 4;
+        int columnWidth = panelW / columns;
+        int buttonRowOffsetY = -10;
+
+        int accX = panelX + columnWidth * 0 + columnWidth/2 - buttonW/2;
+        int accY = panelTop + panelPadding + buttonRowOffsetY;
+
+        int controlX = panelX + columnWidth * 1 + columnWidth/2 - buttonW/2;
+        int controlY = accY;
+
+        int graphicsX = panelX + columnWidth * 2 + columnWidth/2 - buttonW/2;
+        int graphicsY = accY;
+
+        int sfxX = panelX + columnWidth * 3 + columnWidth/2 - buttonW/2;
+        int sfxY = accY;
+
+        int bottomColumns = 2;
+        int bottomColumnWidth = panelW / bottomColumns;
+
+        int backX = panelX + bottomColumnWidth * 0 + bottomColumnWidth/2 - buttonW/2;
+        int playX = panelX + bottomColumnWidth * 1 + bottomColumnWidth/2 - buttonW/2;
+
         int backY = panelBottom - buttonH - panelPadding;
-        int playX = panelX + panelW - buttonW - panelPadding;
-        int playY = panelBottom - buttonH - panelPadding;
-        int accX = panelX + panelPadding;
-        int accY = panelTop + panelPadding;
+        int playY = backY;
+
 
         logo.setBounds(logoW, logoH, logoX, logoY);
 
-        playButton.setBounds(buttonW, buttonH, playX, playY);
-        accountButton.setBounds(buttonW, buttonH, accX, accY);
         backButton.setBounds(buttonW, buttonH, backX, backY);
+        playButton.setBounds(buttonW, buttonH, playX, playY);
+
+        accountButton.setBounds(buttonW, buttonH, accX, accY);
+        controlButton.setBounds(buttonW, buttonH, controlX, controlY);
+        graphicsButton.setBounds(buttonW, buttonH, graphicsX, graphicsY);
+        soundButton.setBounds(buttonW, buttonH, sfxX, sfxY);
+
 
         // ===============================
         // ADD COMPONENTS (correct Z-order)
         // ===============================
         add(logo.getLabel());
         add(bgPanel.getLabel());
+
         add(playButton.getButton());
-        add(accountButton.getButton());
         add(backButton.getButton());
+
+        add(accountButton.getButton());
+        add(controlButton.getButton());
+        add(graphicsButton.getButton());
+        add(soundButton.getButton());
 
         setComponentZOrder(logo.getLabel(), getComponentCount() - 1);
         setComponentZOrder(bgPanel.getLabel(), getComponentCount() - 2);

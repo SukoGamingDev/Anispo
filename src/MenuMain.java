@@ -84,7 +84,7 @@ public class MenuMain extends JPanel {
 
         quitButton = new ButtonMaker(buttonW, buttonH, centerX,
                 startY + 5*(buttonH+spacing),
-                "/GUI/panel1aa.png","/GUI/panel1ac.png","Quit");
+                "/GUI/panel1ac.png","/GUI/panel1ac.png","Quit");
 
 
         settingsButton.getButton().addActionListener(e -> {
@@ -92,6 +92,18 @@ public class MenuMain extends JPanel {
             MenuMain.this.setVisible(false);
             System.out.println("Visible? " + MenuMain.this.isVisible());
             window.showScreen("MenuAccountSettings");
+        });
+
+        discordButton.getButton().addActionListener(e -> {
+            try {
+                Desktop.getDesktop().browse(new java.net.URI("https://discord.gg/vmZuDGz5R"));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        quitButton.getButton().addActionListener(e -> {
+            System.exit(0);
         });
 
 
