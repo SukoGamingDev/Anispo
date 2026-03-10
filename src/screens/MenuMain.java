@@ -1,11 +1,15 @@
+package screens;
+
+import engine.Window;
+import ui.ButtonMaker;
+import ui.LabelMaker;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class MenuMain extends JPanel {
 
-    final Window window;
+    final engine.Window window;
 
     ButtonMaker playButton;
     ButtonMaker tutorialButton;
@@ -16,8 +20,8 @@ public class MenuMain extends JPanel {
     LabelMaker logo;
     LabelMaker bgPanel;
 
-    public MenuMain(Window window) {
-        this.window = window;
+    public MenuMain(Window window2) {
+        this.window = window2;
         setLayout(null);
         setOpaque(false);
     }
@@ -87,11 +91,16 @@ public class MenuMain extends JPanel {
                 "/GUI/panel1ac.png","/GUI/panel1ac.png","Quit");
 
 
+        playButton.getButton().addActionListener(e -> {
+            MenuMain.this.setVisible(false);
+            window.getScreenManager().show("screens.MenuPlay");
+        });
+
         settingsButton.getButton().addActionListener(e -> {
             System.out.println("Clicked");
             MenuMain.this.setVisible(false);
             System.out.println("Visible? " + MenuMain.this.isVisible());
-            window.showScreen("MenuAccountSettings");
+            window.getScreenManager().show("screens.MenuAccountSettings");
         });
 
         discordButton.getButton().addActionListener(e -> {

@@ -1,3 +1,9 @@
+package screens;
+
+import engine.Window;
+import ui.ButtonMaker;
+import ui.LabelMaker;
+
 import javax.swing.*;
 
 
@@ -101,7 +107,7 @@ public class MenuAccountSettings extends JPanel{
                 "SFX");
 
 
-        backButton = new ButtonMaker(buttonW, buttonH, centerX,
+        backButton = new ButtonMaker(buttonW, buttonH, 0,
                 startY + 5*(buttonH+spacing),
                 "/GUI/panel1ac.png",
                 "/GUI/panel1ac.png",
@@ -112,7 +118,7 @@ public class MenuAccountSettings extends JPanel{
             System.out.println("Clicked");
             MenuAccountSettings.this.setVisible(false);
             System.out.println("Visible? " + MenuAccountSettings.this.isVisible());
-            window.showScreen("MAIN");
+            window.getScreenManager().show("MAIN");
         });
 
         // ===============================

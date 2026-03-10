@@ -1,3 +1,7 @@
+package graphics;
+
+import ui.FPSCounter;
+
 import javax.swing.*;
 import java.awt.*;
 

@@ -1,3 +1,5 @@
+package ui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -5,9 +7,7 @@ import java.awt.event.MouseEvent;
 
 public class ButtonMaker {
 
-    // ======================================================
-    // ⭐ Button assets
-    // ======================================================
+    // Button assets
     private final String filepath;
     private final String hoverFilepath;
     private final String text;
@@ -30,9 +30,7 @@ public class ButtonMaker {
         this.hoverFilepath = hoverFilepath;
         this.text = text;
 
-        // =========================================
-        // ⭐ Create transparent Swing button
-        // =========================================
+        // Create transparent Swing button
         button = new JButton();
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
@@ -42,28 +40,23 @@ public class ButtonMaker {
         // Disable Swing default rollover (we handle manually)
         button.setRolloverEnabled(false);
 
-        // =========================================
-        // ⭐ Text styling
-        // =========================================
+
+        // Text styling
         button.setText(text);
         button.setHorizontalTextPosition(SwingConstants.CENTER);
         button.setVerticalTextPosition(SwingConstants.CENTER);
         button.setForeground(Color.WHITE);
 
-        // =========================================
-        // ⭐ Load original images once
+        // Load original images once
         // Prevents reloading on every resize
-        // =========================================
         ImageIcon normalTmp = new ImageIcon(getClass().getResource(filepath));
         ImageIcon hoverTmp = new ImageIcon(getClass().getResource(hoverFilepath));
 
         originalNormal = normalTmp.getImage();
         originalHover = hoverTmp.getImage();
 
-        // =========================================
-        // ⭐ Hover behavior
+        // Hover behavior
         // Swap icons on mouse enter/exit
-        // =========================================
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
                 button.setIcon(hoverIcon);
@@ -78,10 +71,8 @@ public class ButtonMaker {
         // Menu class controls layout
     }
 
-    // ======================================================
-    // ⭐ Resize + reposition button
+    // Resize + reposition button
     // Called during window resize
-    // ======================================================
     public void setBounds(int w, int h, int x, int y){
 
         // Scale icons from cached originals
@@ -98,10 +89,8 @@ public class ButtonMaker {
         button.revalidate();
         button.repaint();
 
-        // =========================================
-        // ⭐ Dynamic font scaling
+        // font scaling
         // Keeps text readable at all sizes
-        // =========================================
         int fontSize = Math.max(14, h / 3);
         button.setFont(new Font("Arial", Font.BOLD, fontSize));
     }
