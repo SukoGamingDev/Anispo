@@ -1,5 +1,6 @@
 package engine;
 
+import screens.GameScreen;
 import screens.MenuAccountSettings;
 import screens.MenuMain;
 import screens.MenuPlay;
@@ -15,6 +16,7 @@ public class ScreenManager {
     private MenuMain menu;
     private MenuAccountSettings settings;
     private MenuPlay play;
+    private GameScreen game;
 
     public ScreenManager(Window window, JLayeredPane pane, int w, int h){
 
@@ -27,6 +29,8 @@ public class ScreenManager {
         menu = new MenuMain(window);
         settings = new MenuAccountSettings(window);
         play = new MenuPlay(window);
+        game = new GameScreen();
+        container.add(game, "screens.GameScreen");
 
         container.add(menu,"screens.MenuMain");
         container.add(settings,"screens.MenuAccountSettings");

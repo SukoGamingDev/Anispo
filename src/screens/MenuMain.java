@@ -36,8 +36,8 @@ public class MenuMain extends JPanel {
         // ===============================
 
         // Width-based scaling
-        int buttonW_fromWidth = screenWidth / 8;
-        int buttonH_fromWidth = buttonW_fromWidth / 3;
+        int buttonW_fromWidth = screenWidth / 4;
+        int buttonH_fromWidth = buttonW_fromWidth / 4;
 
         // Height-based scaling (prevent overflow)
         int maxStackHeight = (int)(screenHeight * 0.65);
@@ -48,52 +48,94 @@ public class MenuMain extends JPanel {
 
         // Use whichever fits vertically
         int buttonW = Math.min(buttonW_fromWidth, buttonW_fromHeight);
-        int buttonH = buttonW / 3;
+        int buttonH = buttonW / 4;
 
         // ===============================
         // STACK POSITIONING
         // ===============================
 
-        int totalHeight = buttonCount * buttonH + (buttonCount - 1) * spacing;
-        int startY = screenHeight / 2 - totalHeight / 2 - screenHeight / 40;
-        int centerX = screenWidth / 2 - buttonW / 2;
+
 
         // ===============================
         // LOGO (clamped so it never goes off top)
         // ===============================
 
-        int logoW = buttonW * 6;
-        int logoH = logoW / 2;
+        int logoW = buttonW * 3;
+        int logoH = logoW / 3;
+
+
+        if(screenHeight>screenWidth){
+            //logoW = logoW*2;
+            //logoH = logoH*2;
+
+            buttonW = buttonW*2;
+            buttonH = buttonH*2;
+
+        }
         int logoX = screenWidth / 2 - logoW / 2;
         int logoY = (int)(screenHeight * 0.03);
 
+        int totalHeight = buttonCount * buttonH + (buttonCount - 1) * spacing;
+        int spacingBelowLogo = (int)(logoH * 0.25);
+
+// Top boundary (just under logo)
+        int topBound = logoY + logoH + spacingBelowLogo;
+
+// Bottom boundary (give a little margin)
+        int bottomBound = (int)(screenHeight * 0.95);
+
+// Available space
+        int availableHeight = bottomBound - topBound;
+
+// Total menu height
+
+
+// ✅ Center menu in that region
+        int centerY = topBound + (availableHeight - totalHeight) / 2;
+
+// consistent upward offset
+        int offset = (int)(screenHeight * 0.05);
+
+        int startY = centerY - offset;
+        int centerX = screenWidth / 2 - buttonW / 2;
+
+        String buttonIcon = "/GUI/BlueButtonHex.png";
+        String buttonHoverIcon = "/GUI/DarkBlueButton.png";
+
         removeAll();
 
-        bgPanel = new LabelMaker("/GUI/Trialbg2bb.png");
-        logo = new LabelMaker("/GUI/Anispocool2.png");
+        bgPanel = new LabelMaker("/GUI/BluePanelTall.png");
+        logo = new LabelMaker("/GUI/logoGQ.png");
 
-        playButton = new ButtonMaker(buttonW, buttonH, centerX, startY + (buttonH+spacing),
-                "/GUI/panel1aa.png","/GUI/panel1ab.png","Play");
+        playButton = new ButtonMaker(buttonW, buttonH,
+                buttonIcon,
+                "/GUI/GreenButton.png",
+                "Play");
 
-        tutorialButton = new ButtonMaker(buttonW, buttonH, centerX, startY + 2*(buttonH+spacing),
-                "/GUI/panel1aa.png","/GUI/panel1ab.png","Tutorial");
+        tutorialButton = new ButtonMaker(buttonW, buttonH,
+                buttonIcon,
+                buttonHoverIcon,
+                "Tutorial");
 
-        settingsButton = new ButtonMaker(buttonW, buttonH, centerX,
-                startY + 3*(buttonH+spacing),
-                "/GUI/panel1aa.png","/GUI/panel1ab.png","Settings");
+        settingsButton = new ButtonMaker(buttonW, buttonH,
+                buttonIcon,
+                buttonHoverIcon,
+                "Settings");
 
-        discordButton = new ButtonMaker(buttonW, buttonH, centerX,
-                startY + 4*(buttonH+spacing),
-                "/GUI/panel1aa.png","/GUI/panel1ab.png","Discord");
+        discordButton = new ButtonMaker(buttonW, buttonH,
+                buttonIcon,
+                buttonHoverIcon,
+                "Discord");
 
-        quitButton = new ButtonMaker(buttonW, buttonH, centerX,
-                startY + 5*(buttonH+spacing),
-                "/GUI/panel1ac.png","/GUI/panel1ac.png","Quit");
+        quitButton = new ButtonMaker(buttonW, buttonH,
+                buttonIcon,
+                "/GUI/RedButton.png",
+                "Quit");
 
 
         playButton.getButton().addActionListener(e -> {
-            MenuMain.this.setVisible(false);
-            window.getScreenManager().show("screens.MenuPlay");
+            System.out.println("Play clicked");
+            window.getScreenManager().show("screens.GameScreen");
         });
 
         settingsButton.getButton().addActionListener(e -> {
@@ -122,18 +164,21 @@ public class MenuMain extends JPanel {
         // PANEL WRAP (perfectly around stack)
         // ===============================
 
-        int panelPadding = 25;
+        int panelPaddingX = 25;
+        int panelPaddingY = 20;
 
-        int firstButtonY = startY + (buttonH + spacing);
-        int lastButtonY  = startY + 5*(buttonH + spacing);
+        int firstButtonY = startY;
+        int lastButtonY  = startY + (buttonCount - 1) * (buttonH + spacing);
 
-        int panelTop = firstButtonY - panelPadding / 2;
-        int panelBottom = lastButtonY + buttonH + panelPadding / 2;
+        int panelTop = firstButtonY - panelPaddingY;
+        int panelBottom = lastButtonY + buttonH + panelPaddingY;
 
         int panelH = panelBottom - panelTop;
-        int panelW = buttonW + panelPadding;
+        int panelW = buttonW + panelPaddingX * 2;
 
         int panelX = screenWidth / 2 - panelW / 2;
+
+        bgPanel.setBounds(panelW, panelH, panelX, panelTop);
 
         bgPanel.setBounds(panelW, panelH, panelX, panelTop);
 
@@ -143,11 +188,11 @@ public class MenuMain extends JPanel {
 
         logo.setBounds(logoW, logoH, logoX, logoY);
 
-        playButton.setBounds(buttonW, buttonH, centerX, startY + (buttonH+spacing));
-        tutorialButton.setBounds(buttonW, buttonH, centerX, startY + 2*(buttonH+spacing));
-        settingsButton.setBounds(buttonW, buttonH, centerX, startY + 3*(buttonH+spacing));
-        discordButton.setBounds(buttonW, buttonH, centerX, startY + 4*(buttonH+spacing));
-        quitButton.setBounds(buttonW, buttonH, centerX, startY + 5*(buttonH+spacing));
+        playButton.setBounds(buttonW, buttonH, centerX, startY);
+        tutorialButton.setBounds(buttonW, buttonH, centerX, startY + 1*(buttonH+spacing));
+        settingsButton.setBounds(buttonW, buttonH, centerX, startY + 2*(buttonH+spacing));
+        discordButton.setBounds(buttonW, buttonH, centerX, startY + 3*(buttonH+spacing));
+        quitButton.setBounds(buttonW, buttonH, centerX, startY + 4*(buttonH+spacing));
 
 
 

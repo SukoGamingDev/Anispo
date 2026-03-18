@@ -23,8 +23,10 @@ public class ButtonMaker {
     private Image originalNormal;
     private Image originalHover;
 
-    public ButtonMaker(int sizeX, int sizeY, int locationX, int locationY,
-                       String filepath, String hoverFilepath, String text) {
+    public ButtonMaker(int sizeX, int sizeY,
+                       String filepath,
+                       String hoverFilepath,
+                       String text) {
 
         this.filepath = filepath;
         this.hoverFilepath = hoverFilepath;
@@ -66,9 +68,7 @@ public class ButtonMaker {
             }
         });
 
-        // NOTE:
-        // Bounds intentionally NOT set here
-        // Menu class controls layout
+        // NOTE: Bounds intentionally NOT set here, Menu class controls layout
     }
 
     // Resize + reposition button
