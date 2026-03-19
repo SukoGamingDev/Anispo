@@ -16,10 +16,8 @@ public class Fleet {
     public ArrayList<Ship> shipsList = new ArrayList<>();
 
     private Image shipImage;
+    private boolean selected = false;
 
-    // =========================
-    // CONSTRUCTOR
-    // =========================
     public Fleet(int x, int y, Planet source, Planet target, int ships, Player owner) {
 
         this.source = source;
@@ -29,7 +27,10 @@ public class Fleet {
 
         int visualShips = calculateVisualShips();
 
-        // 🔥 spawn real ships
+        // 🔥 distribute exact payload
+        int base = ships / visualShips;
+        int extra = ships % visualShips;
+
         for (int i = 0; i < visualShips; i++) {
 
             double spread = 8;
@@ -37,10 +38,11 @@ public class Fleet {
             double sx = x + (Math.random() - 0.5) * spread;
             double sy = y + (Math.random() - 0.5) * spread;
 
-            shipsList.add(new Ship(sx, sy));
+            int payload = base + (i < extra ? 1 : 0);
+
+            shipsList.add(new Ship(sx, sy, payload));
         }
 
-        // 🔥 load image
         try {
             java.net.URL url = getClass().getResource("/GUI/ship.png");
 
@@ -57,36 +59,13 @@ public class Fleet {
         }
     }
 
-    // =========================
-    // VISUAL SHIP COUNT
-    // =========================
     private int calculateVisualShips() {
         if (ships <= 18) return ships;
         return 18 + (int)((ships - 18) * 0.4);
     }
 
-    public boolean contains(int mx, int my) {
-
-        double radius = 20; // selection radius
-
-        for (Ship s : shipsList) {
-
-            double dx = mx - s.x;
-            double dy = my - s.y;
-
-            if (dx * dx + dy * dy <= radius * radius) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // =========================
-    // UPDATE
-    // =========================
     public boolean update(double dt, ArrayList<Planet> planets) {
-        if (target == null) return true; // kill the fleet safely
+        if (target == null) return true;
 
         Iterator<Ship> it = shipsList.iterator();
 
@@ -98,28 +77,23 @@ public class Fleet {
             double dy = target.getY() - s.y;
 
             double dist = Math.sqrt(dx * dx + dy * dy);
-
-            // 🔥 ship lands individually
             double planetRadius = target.getRadius();
 
+            // 🔥 LANDING (FIXED)
             if (dist < planetRadius) {
 
-                // snap ship to surface (optional but nice)
-                double nx = dx / dist;
-                double ny = dy / dist;
+                for (int i = 0; i < s.getPayload(); i++) {
+                    target.receiveShip(owner);
+                }
 
-                s.x = target.getX() - nx * planetRadius;
-                s.y = target.getY() - ny * planetRadius;
+                it.remove(); // 🔥 CRITICAL FIX
 
-                target.receiveShip(owner);
-                it.remove();
                 continue;
             }
 
             double nx = dx / dist;
             double ny = dy / dist;
 
-            // smooth movement
             s.vx += nx * 400 * dt;
             s.vy += ny * 400 * dt;
 
@@ -129,19 +103,15 @@ public class Fleet {
             s.x += s.vx * dt;
             s.y += s.vy * dt;
 
-            // =========================
-            // PLANET AVOIDANCE
-            // =========================
+            // avoidance
             for (Planet p : planets) {
 
-                if (p == target) continue;
-                if (p == source) continue;
+                if (p == target || p == source) continue;
 
                 double pdx = p.getX() - s.x;
                 double pdy = p.getY() - s.y;
 
                 double pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-
                 double avoidRadius = p.getRadius() + 30;
 
                 if (pdist < avoidRadius && pdist > 0) {
@@ -157,7 +127,7 @@ public class Fleet {
             }
 
             // =========================================
-// 🔥 HARD COLLISION (ADD THIS AFTER)
+// 🔥 HARD COLLISION (FIX PLANET CLIPPING)
 // =========================================
             for (Planet p : planets) {
 
@@ -176,11 +146,11 @@ public class Fleet {
                     double nxp = dxp / distp;
                     double nyp = dyp / distp;
 
-                    // push ship OUTSIDE planet
+                    // 🔥 PUSH ship OUTSIDE planet
                     s.x = p.getX() + nxp * minDist;
                     s.y = p.getY() + nyp * minDist;
 
-                    // remove inward velocity
+                    // 🔥 REMOVE inward velocity (prevents suction)
                     double dot = s.vx * nxp + s.vy * nyp;
 
                     if (dot < 0) {
@@ -192,8 +162,8 @@ public class Fleet {
         }
 
         // =========================
-        // 🔥 SHIP SEPARATION
-        // =========================
+// 🔥 SHIP SEPARATION (FIX)
+// =========================
         for (int i = 0; i < shipsList.size(); i++) {
             Ship a = shipsList.get(i);
 
@@ -223,21 +193,14 @@ public class Fleet {
             }
         }
 
-        // 🔥 fleet is done when all ships are gone
         return shipsList.isEmpty();
     }
 
-    // =========================
-    // DRAW
-    // =========================
     public void draw(Graphics2D g) {
         if (target == null) return;
 
         int size = 12;
 
-        // =========================
-        // DRAW SHIPS
-        // =========================
         for (Ship s : shipsList) {
 
             double angle = Math.atan2(
@@ -261,12 +224,8 @@ public class Fleet {
             }
         }
 
-        // =========================
-        // 🔥 DRAW SELECTION RING (ONCE)
-        // =========================
         if (selected && !shipsList.isEmpty()) {
 
-            // center of fleet
             double avgX = 0;
             double avgY = 0;
 
@@ -278,37 +237,25 @@ public class Fleet {
             avgX /= shipsList.size();
             avgY /= shipsList.size();
 
-            int radius = 12; // 🔥 fixed small size
+            int radius = 12;
 
-            g.setColor(owner.color); // nicer than white
+            g.setColor(owner.color);
             g.setStroke(new BasicStroke(2));
 
             g.drawOval((int)avgX - radius, (int)avgY - radius, radius * 2, radius * 2);
         }
     }
 
-    // =========================
-    // GETTERS
-    // =========================
-    public int getShips() {
-        return shipsList.size();
-    }
-
-    public Player getOwner() {
-        return owner;
-    }
-
-    public Planet getTarget() {
-        return target;
-    }
+    public Player getOwner() { return owner; }
+    public Planet getTarget() { return target; }
 
     public void setTarget(Planet newTarget) {
-        if (newTarget == null) return;
-        this.target = newTarget;
+        if (newTarget != null) this.target = newTarget;
     }
 
-    private boolean selected = false;
-
+    // =========================
+// SELECTION
+// =========================
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
@@ -317,14 +264,9 @@ public class Fleet {
         return selected;
     }
 
-    public void scalePosition(double scaleX, double scaleY) {
-
-        for (Ship s : shipsList) {
-            s.x *= scaleX;
-            s.y *= scaleY;
-        }
-    }
-
+    // =========================
+// BOX SELECTION
+// =========================
     public boolean isInsideBox(int minX, int minY, int maxX, int maxY) {
 
         for (Ship s : shipsList) {
@@ -336,5 +278,16 @@ public class Fleet {
         }
 
         return false;
+    }
+
+    // =========================
+// SCALE POSITION (for resizing)
+// =========================
+    public void scalePosition(double scaleX, double scaleY) {
+
+        for (Ship s : shipsList) {
+            s.x *= scaleX;
+            s.y *= scaleY;
+        }
     }
 }

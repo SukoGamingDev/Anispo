@@ -17,6 +17,7 @@ public class Planet {
     private Player owner;
 
     private boolean selected;
+    private double incomingBuffer = 0;
 
     public Player getOwner() {
         return owner;
@@ -77,24 +78,29 @@ public class Planet {
     public void receiveShip(Player attacker) {
 
         if (owner == null) {
+
             cost--;
 
             if (cost <= -1) {
                 owner = attacker;
-                ships = 1;
+                ships = Math.abs(cost);
                 cost = 0;
             }
+
             return;
         }
 
         if (owner == attacker) {
+
             ships++;
+
         } else {
+
             ships--;
 
             if (ships <= -1) {
                 owner = attacker;
-                ships = 1;
+                ships = Math.abs(ships);
             }
         }
     }
