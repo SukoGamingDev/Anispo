@@ -49,6 +49,19 @@ public class Planet {
         this.ships = ships;
     }
 
+    public int getCost() {
+        return cost;
+    }
+
+    public void setOwner(Player owner) {
+        this.owner = owner;
+    }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public Planet(int x, int y, int value, Player owner, int ships, int cost) {
         this.x = x;
         this.y = y;

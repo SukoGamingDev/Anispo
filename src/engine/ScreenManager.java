@@ -16,7 +16,8 @@ public class ScreenManager {
     private MenuMain menu;
     private MenuAccountSettings settings;
     private MenuPlay play;
-    private GameScreen game;
+
+    private GameScreen game; // 🔥 created dynamically
 
     public ScreenManager(Window window, JLayeredPane pane, int w, int h){
 
@@ -26,27 +27,55 @@ public class ScreenManager {
         container.setOpaque(false);
         container.setBounds(0,0,w,h);
 
+        // =========================
+        // MENUS
+        // =========================
         menu = new MenuMain(window);
         settings = new MenuAccountSettings(window);
         play = new MenuPlay(window);
-        game = new GameScreen();
-        container.add(game, "screens.GameScreen");
 
-        container.add(menu,"screens.MenuMain");
-        container.add(settings,"screens.MenuAccountSettings");
-        container.add(play,"screens.MenuPlay");
+        container.add(menu,"menu");
+        container.add(settings,"settings");
+        container.add(play,"play");
 
         pane.add(container, Integer.valueOf(5));
 
-        layout.show(container,"screens.MenuMain");
+        layout.show(container,"menu");
 
         resizeTo(w,h);
     }
 
+    // =========================
+    // 🔥 START GAME (CORE METHOD)
+    // =========================
+    public void startGame(GameMode mode) {
+
+        // remove old game if it exists
+        if (game != null) {
+            container.remove(game);
+        }
+
+        // create new game with selected mode
+        game = new GameScreen(mode);
+
+        container.add(game, "game");
+
+        layout.show(container, "game");
+
+        container.revalidate();
+        container.repaint();
+    }
+
+    // =========================
+    // SCREEN SWITCHING
+    // =========================
     public void show(String screen){
         layout.show(container,screen);
     }
 
+    // =========================
+    // RESIZING
+    // =========================
     public void resizeTo(int w, int h){
 
         container.setBounds(0,0,w,h);
@@ -54,5 +83,10 @@ public class ScreenManager {
         menu.resizeTo(w,h);
         settings.resizeTo(w,h);
         play.resizeTo(w,h);
+
+        // 🔥 also resize game if active
+        if (game != null) {
+            game.setBounds(0,0,w,h);
+        }
     }
 }

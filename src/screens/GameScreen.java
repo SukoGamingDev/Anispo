@@ -1,375 +1,173 @@
 package screens;
 
+import engine.InputHandler;
 import game.Fleet;
 import game.Planet;
-import game.Player;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
+import engine.GameLogic;
+import engine.GameMode;
 
 public class GameScreen extends JPanel {
 
-    ArrayList<Planet> planets = new ArrayList<>();
-    ArrayList<Fleet> fleets = new ArrayList<>();
-    Player player = new Player(1, Color.BLUE);
-    Player enemy  = new Player(2, Color.RED);
+    GameLogic logic;
+    GameMode mode;
+    InputHandler input;
 
-    Planet dragSource = null;
-    int mouseX = 0;
-    int mouseY = 0;
-    boolean dragging = false;
-    Planet hoverTarget = null;
+    // 🔥 MUST be class-level (not inside constructor)
+    int lastW = 0;
+    int lastH = 0;
 
-    int sendPercent = 50; // default = 50%
+    public GameScreen(GameMode selectedMode) {
 
-    boolean boxSelecting = false;
-
-    int boxStartX, boxStartY;
-    int boxEndX, boxEndY;
-
-    private void handleArrival(Fleet f) {
-
-        Planet target = f.getTarget();
-
-        for (int i = 0; i < f.getShips(); i++) {
-            target.receiveShip(f.getOwner());
-        }
-    }
-
-    private void clearSelection() {
-        for (Planet p : planets) {
-            p.setSelected(false);
-        }
-    }
-
-
-
-
-    public GameScreen() {
         setBackground(Color.BLACK);
-        System.out.println("GameScreen created"); // 👈 add this
 
-        planets.add(new Planet(300, 300, 80, player, 100, 0));
-        planets.add(new Planet(600, 300, 50, null, 0, 25));
-        planets.add(new Planet(900, 300, 80, enemy, 100, 0));
+        logic = new GameLogic();
+        mode = selectedMode;
+
+        input = new InputHandler(logic);
+
+        addMouseListener(input);
+        addMouseMotionListener(input);
 
         setFocusable(true);
-        requestFocusInWindow();
 
-
-
-        addKeyListener(new java.awt.event.KeyAdapter() {
+        // =========================
+        // 🔥 RESIZE = SCALE (NOT RESET)
+        // =========================
+        addComponentListener(new ComponentAdapter() {
             @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
+            public void componentResized(ComponentEvent e) {
 
-                int key = e.getKeyCode();
+                int newW = getWidth();
+                int newH = getHeight();
 
-                if (key >= java.awt.event.KeyEvent.VK_1 && key <= java.awt.event.KeyEvent.VK_9) {
-                    sendPercent = (key - java.awt.event.KeyEvent.VK_0) * 10;
-                }
+                if (newW <= 0 || newH <= 0) return;
 
-                if (key == java.awt.event.KeyEvent.VK_0) {
-                    sendPercent = 100;
-                }
-
-                System.out.println("Percent: " + sendPercent);
-            }
-        });
-
-
-
-
-        new Timer(16, e -> {
-
-            double dt = 0.016;
-
-            // update planets
-            for (Planet p : planets) {
-                p.update(dt);
-            }
-
-            // update fleets
-            for (int i = fleets.size() - 1; i >= 0; i--) {
-
-                Fleet f = fleets.get(i);
-
-                if (f.update(dt, planets)) {
-                    handleArrival(f);
-                    fleets.remove(i);
-                }
-            }
-
-            repaint();
-
-        }).start();
-
-        addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-                requestFocusInWindow();
-
-                int mx = e.getX();
-                int my = e.getY();
-
-                boolean clickedPlanet = false;
-
-                if (SwingUtilities.isRightMouseButton(e)) {
-
-
-
-                    Planet target = null;
-
-                    for (Planet p : planets) {
-                        if (p.contains(mx, my)) {
-                            target = p;
-                            break;
-                        }
-                    }
-
-                    if (target != null) {
-
-
-
-                        for (Planet p : planets) {
-                            if (p.isSelected() && p.getOwner() == player) {
-                                if (p == target) continue;
-
-
-                                int sendAmount = (int)(p.getShips() * (sendPercent / 100.0));
-
-                                if (sendAmount < 1 && p.getShips() > 0) {
-                                    sendAmount = 1;
-                                }
-
-                                if (sendAmount > 0) {
-
-                                    p.setShips(p.getShips() - sendAmount);
-
-                                    double dx = target.getX() - p.getX();
-                                    double dy = target.getY() - p.getY();
-
-                                    double dist = Math.sqrt(dx * dx + dy * dy);
-
-                                    double nx = dx / dist;
-                                    double ny = dy / dist;
-
-                                    int startX = (int)(p.getX() + nx * p.getRadius());
-                                    int startY = (int)(p.getY() + ny * p.getRadius());
-
-
-
-                                    fleets.add(new Fleet(
-                                            startX,
-                                            startY,
-                                            p,
-                                            target,   // ✅ NOT hoverTarget
-                                            sendAmount,
-                                            player
-                                    ));
-
-                                }
-                            }
-                        }
-                        clearSelection();
-                    }
-
-
+                // first resize (initialize baseline)
+                if (lastW == 0 || lastH == 0) {
+                    lastW = newW;
+                    lastH = newH;
                     return;
                 }
 
+                double scaleX = newW / (double) lastW;
+                double scaleY = newH / (double) lastH;
 
-                for (Planet p : planets) {
-                    if (p.contains(mx, my)) {
-
-
-
-                        if (p.getOwner() == player) {
-
-
-                            dragSource = p;
-                            dragging = true;
-
-                            // 🔥 ONLY select it if NOTHING is selected yet
-                            boolean anySelected = false;
-
-                            for (Planet other : planets) {
-                                if (other.isSelected()) {
-                                    anySelected = true;
-                                    break;
-                                }
-                            }
-
-                            if (!anySelected) {
-                                p.setSelected(true);
-                            }
-                        }
-
-                        clickedPlanet = true;
-                        break;
-                    }
+                // 🔥 SCALE PLANETS
+                for (Planet p : logic.planets) {
+                    int newX = (int)(p.getX() * scaleX);
+                    int newY = (int)(p.getY() * scaleY);
+                    p.setPosition(newX, newY);
                 }
 
-                // 🔥 If NOT clicking a planet → start box select
-                if (!clickedPlanet) {
-
-                    dragging = false; // 🔥 stop drag mode
-                    dragSource = null;
-
-                    boxSelecting = true;
-
-                    boxStartX = mx;
-                    boxStartY = my;
-                    boxEndX = mx;
-                    boxEndY = my;
-
-                    // clear previous selection
-                    for (Planet p : planets) {
-                        p.setSelected(false);
-                    }
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-                // =========================
-                // BOX SELECT FINISH
-                // =========================
-                if (boxSelecting) {
-
-                    int minX = Math.min(boxStartX, boxEndX);
-                    int maxX = Math.max(boxStartX, boxEndX);
-                    int minY = Math.min(boxStartY, boxEndY);
-                    int maxY = Math.max(boxStartY, boxEndY);
-
-                    for (Planet p : planets) {
-                        if (p.getOwner() == player) {
-
-                            int px = p.getX();
-                            int py = p.getY();
-
-                            if (px >= minX && px <= maxX && py >= minY && py <= maxY) {
-                                p.setSelected(true);
-                            }
-                        }
-                    }
-
-                    boxSelecting = false; // 🔥 MUST BE HERE
+                // 🔥 SCALE FLEETS
+                for (Fleet f : logic.fleets) {
+                    f.scalePosition(scaleX, scaleY);
                 }
 
-                // =========================
-                // DRAG SEND
-                // =========================
-                else if (dragging && dragSource != null && hoverTarget != null && hoverTarget != dragSource) {
-
-                    for (Planet p : planets) {
-
-                        if (p.isSelected() && p.getOwner() == player) {
-
-                            if (p == hoverTarget) continue; // 🔥 PREVENT SELF-SEND
-
-                            int sendAmount = (int)(p.getShips() * (sendPercent / 100.0));
-
-                            if (sendAmount < 1 && p.getShips() > 0) {
-                                sendAmount = 1;
-                            }
-
-                            if (sendAmount > 0) {
-
-                                p.setShips(p.getShips() - sendAmount);
-
-                                double dx = hoverTarget.getX() - p.getX();
-                                double dy = hoverTarget.getY() - p.getY();
-
-                                double dist = Math.sqrt(dx * dx + dy * dy);
-
-                                double nx = dx / dist;
-                                double ny = dy / dist;
-
-                                int startX = (int)(p.getX() + nx * p.getRadius());
-                                int startY = (int)(p.getY() + ny * p.getRadius());
-
-                                fleets.add(new Fleet(
-                                        startX,
-                                        startY,
-                                        p,
-                                        hoverTarget,
-                                        sendAmount,
-                                        player
-                                ));
-                            }
-                        }
-                    }
-
-                    clearSelection();
-                }
-
-
-                // =========================
-                // RESET STATES
-                // =========================
-                dragging = false;
-                dragSource = null;
-                hoverTarget = null;
+                lastW = newW;
+                lastH = newH;
             }
         });
 
-        addMouseMotionListener(new MouseAdapter() {
+        // =========================
+        // 🔥 KEY BINDINGS (NO FOCUS ISSUES)
+        // =========================
+        InputMap im = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getActionMap();
+
+        for (int i = 1; i <= 9; i++) {
+            int percent = i * 10;
+            String key = "setPercent" + percent;
+
+            im.put(KeyStroke.getKeyStroke(String.valueOf(i)), key);
+
+            am.put(key, new AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    input.setSendPercent(percent);
+                }
+            });
+        }
+
+        im.put(KeyStroke.getKeyStroke("0"), "setPercent100");
+
+        am.put("setPercent100", new AbstractAction() {
             @Override
-            public void mouseDragged(MouseEvent e) {
-
-                int mx = e.getX();
-                int my = e.getY();
-
-                if (dragging && !boxSelecting) {
-                    hoverTarget = null;
-
-                    for (Planet p : planets) {
-                        if (p.contains(mx, my)) {
-                            hoverTarget = p;
-                            break;
-                        }
-                    }
-                }
-
-                if (boxSelecting) {
-                    boxEndX = mx;
-                    boxEndY = my;
-                }
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                input.setSendPercent(100);
             }
+        });
+
+        // =========================
+        // GAME LOOP
+        // =========================
+        new Timer(16, e -> {
+            double dt = 0.016;
+            logic.update(dt);
+            repaint();
+        }).start();
+
+        // =========================
+        // 🔥 GENERATE MAP ONCE (AFTER SIZE EXISTS)
+        // =========================
+        SwingUtilities.invokeLater(() -> {
+            mode.generate(logic, getWidth(), getHeight());
+
+            // set baseline size AFTER generation
+            lastW = getWidth();
+            lastH = getHeight();
+
+            // focus fix
+            Window window = SwingUtilities.getWindowAncestor(this);
+            if (window != null) {
+                window.toFront();
+                window.requestFocus();
+            }
+
+            requestFocusInWindow();
         });
     }
 
-
+    // =========================
+    // RENDER
+    // =========================
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
 
-        if (boxSelecting) {
+        // BOX SELECT
+        if (input.isBoxSelecting()) {
 
-            int x = Math.min(boxStartX, boxEndX);
-            int y = Math.min(boxStartY, boxEndY);
-            int w = Math.abs(boxStartX - boxEndX);
-            int h = Math.abs(boxStartY - boxEndY);
+            int x = Math.min(input.getBoxStartX(), input.getBoxEndX());
+            int y = Math.min(input.getBoxStartY(), input.getBoxEndY());
+            int w = Math.abs(input.getBoxStartX() - input.getBoxEndX());
+            int h = Math.abs(input.getBoxStartY() - input.getBoxEndY());
 
-            g2.setColor(new Color(255, 255, 255, 80)); // transparent fill
+            g2.setColor(new Color(255, 255, 255, 80));
             g2.fillRect(x, y, w, h);
 
             g2.setColor(Color.WHITE);
             g2.drawRect(x, y, w, h);
         }
 
-        for (Planet p : planets) {
-            p.draw(g2); // ✅ clean and works
+        // PLANETS
+        for (Planet p : logic.planets) {
+            p.draw(g2);
         }
-        if (dragging && dragSource != null && hoverTarget != null) {
+
+        // DRAG LINE
+        if (input.getDragSource() != null && input.getHoverTarget() != null) {
+
+            Planet dragSource = input.getDragSource();
+            Planet hoverTarget = input.getHoverTarget();
 
             double dx = hoverTarget.getX() - dragSource.getX();
             double dy = hoverTarget.getY() - dragSource.getY();
@@ -389,19 +187,21 @@ public class GameScreen extends JPanel {
 
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(2));
-
                 g2.drawLine(startX, startY, endX, endY);
                 g2.setStroke(new BasicStroke(3));
             }
         }
-        for (Fleet f : fleets) {
+
+        // FLEETS
+        for (Fleet f : logic.fleets) {
             f.draw(g2);
         }
 
+        // UI TEXT
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Arial", Font.BOLD, 20));
 
-        String text = sendPercent + "%";
+        String text = input.getSendPercent() + "%";
 
         FontMetrics fm = g2.getFontMetrics();
         int textWidth = fm.stringWidth(text);
@@ -410,11 +210,5 @@ public class GameScreen extends JPanel {
         int y = getHeight() - 20;
 
         g2.drawString(text, x, y);
-
-
     }
-
-
-
-
 }

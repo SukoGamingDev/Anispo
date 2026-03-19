@@ -29,6 +29,12 @@ public class Window {
         frame.setContentPane(layeredPane);
         frame.setVisible(true);
 
+        // 🔥 ADD THIS BLOCK RIGHT HERE
+        SwingUtilities.invokeLater(() -> {
+            frame.toFront();
+            frame.requestFocus();
+        });
+
         screenWidth = frame.getContentPane().getWidth();
         screenHeight = frame.getContentPane().getHeight();
 

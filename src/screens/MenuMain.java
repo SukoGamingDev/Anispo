@@ -1,6 +1,8 @@
 package screens;
 
 import engine.Window;
+import modes.EliminatorMode;
+import modes.HexMode;
 import ui.ButtonMaker;
 import ui.LabelMaker;
 
@@ -135,14 +137,15 @@ public class MenuMain extends JPanel {
 
         playButton.getButton().addActionListener(e -> {
             System.out.println("Play clicked");
-            window.getScreenManager().show("screens.GameScreen");
+            window.getScreenManager().startGame(new EliminatorMode());
+            //window.getScreenManager().startGame(new HexMode());
         });
 
         settingsButton.getButton().addActionListener(e -> {
             System.out.println("Clicked");
             MenuMain.this.setVisible(false);
             System.out.println("Visible? " + MenuMain.this.isVisible());
-            window.getScreenManager().show("screens.MenuAccountSettings");
+            window.getScreenManager().show("settings");
         });
 
         discordButton.getButton().addActionListener(e -> {
